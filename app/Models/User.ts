@@ -9,6 +9,7 @@ import {
 } from '@ioc:Adonis/Lucid/Orm'
 
 import { v4 as uuidv4 } from 'uuid'
+import Hash from '@ioc:Adonis/Core/Hash'
 import Bet from './Bet'
 
 export default class User extends BaseModel {
@@ -42,4 +43,18 @@ export default class User extends BaseModel {
 
   @hasMany(() => Bet)
   public bets: HasMany<typeof Bet>
+
+  @beforeSave()
+  public static async hashPassword(user: User) {
+    if (user.$dirty.password) {
+      user.password = await Hash.make(user.password)
+    }
+  }
+
+  @beforeUpdate()
+  public static async hashUpdatedPassword(user: User) {
+    if (user.$dirty.password) {
+      user.password = await Hash.make(user.password)
+    }
+  }
 }
