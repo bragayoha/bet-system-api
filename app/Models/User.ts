@@ -9,6 +9,7 @@ import {
 } from '@ioc:Adonis/Lucid/Orm'
 
 import { v4 as uuidv4 } from 'uuid'
+import Bet from './Bet'
 
 export default class User extends BaseModel {
   @column({ isPrimary: true })
@@ -38,4 +39,7 @@ export default class User extends BaseModel {
     serialize: (value) => value.toFormat('dd/MM/yyyy'),
   })
   public updatedAt: DateTime
+
+  @hasMany(() => Bet)
+  public bets: HasMany<typeof Bet>
 }

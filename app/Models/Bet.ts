@@ -1,28 +1,21 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
-import Bet from './Bet'
+import { BaseModel, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
 
-export default class Game extends BaseModel {
+import User from './User'
+import Game from './Game'
+
+export default class Bet extends BaseModel {
   @column({ isPrimary: true })
   public id: number
 
   @column()
-  public type: string
+  public userId: number
 
   @column()
-  public description: string
+  public gameId: number
 
   @column()
-  public range: number
-
-  @column()
-  public price: number
-
-  @column()
-  public minAndMaxValue: number
-
-  @column()
-  public color: string
+  public numbers: string
 
   @column.dateTime({ autoCreate: true, serialize: (value) => value.toFormat('dd/MM/yyyy') })
   public createdAt: DateTime
@@ -34,6 +27,9 @@ export default class Game extends BaseModel {
   })
   public updatedAt: DateTime
 
-  @hasMany(() => Bet)
-  public bets: HasMany<typeof Bet>
+  @belongsTo(() => User)
+  public user: BelongsTo<typeof User>
+
+  @belongsTo(() => Game)
+  public game: BelongsTo<typeof Game>
 }
