@@ -19,6 +19,9 @@ export default class User extends BaseModel {
   @column()
   public secureId: uuidv4
 
+  @column({ serializeAs: null })
+  public rememberMeToken?: string
+
   @column()
   public name: string
 

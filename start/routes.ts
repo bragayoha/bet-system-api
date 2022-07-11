@@ -37,4 +37,5 @@ Route.get('test_db_connection', async ({ response }: HttpContextContract) => {
 
 Route.group(() => {
   Route.resource('users/', 'UsersController').apiOnly()
+  Route.post('login', 'AuthController.login')
 }).prefix('v1/api')
