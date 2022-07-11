@@ -6,11 +6,14 @@ import {
   hasMany,
   HasMany,
   beforeUpdate,
+  manyToMany,
+  ManyToMany,
 } from '@ioc:Adonis/Lucid/Orm'
 
 import { v4 as uuidv4 } from 'uuid'
 import Hash from '@ioc:Adonis/Core/Hash'
 import Bet from './Bet'
+import Role from './Role'
 
 export default class User extends BaseModel {
   @column({ isPrimary: true })
@@ -46,6 +49,11 @@ export default class User extends BaseModel {
 
   @hasMany(() => Bet)
   public bets: HasMany<typeof Bet>
+
+  @manyToMany(() => Role, {
+    pivotTable: 'user_roles',
+  })
+  public roles: ManyToMany<typeof Role>
 
   @beforeSave()
   public static async hashPassword(user: User) {

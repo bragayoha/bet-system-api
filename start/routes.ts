@@ -39,3 +39,7 @@ Route.group(() => {
   Route.resource('users/', 'UsersController').apiOnly()
   Route.post('login', 'AuthController.login')
 }).prefix('v1/api')
+
+Route.group(() => {})
+  .prefix('v1/api')
+  .middleware('auth')
