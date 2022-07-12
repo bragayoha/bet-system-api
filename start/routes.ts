@@ -25,20 +25,29 @@ import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
 Route.where('id', Route.matchers.number())
 
-Route.get('test_db_connection', async ({ response }: HttpContextContract) => {
-  await Database.report().then(({ health }) => {
-    const { healthy, message } = health
+Route.group(() => {
+  Route.post('login', 'AuthController.login')
+  Route.get('test_db_connection', async ({ response }: HttpContextContract) => {
+    await Database.report().then(({ health }) => {
+      const { healthy, message } = health
 
-    if (healthy) return response.ok({ message })
+      if (healthy) return response.ok({ message })
 
-    return response.status(500).json({ message })
+      return response.status(500).json({ message })
+    })
   })
-})
+  Route.post('/', 'UsersController.store')
+}).prefix('v1/api')
 
 Route.group(() => {
-  Route.resource('users/', 'UsersController').apiOnly()
-  Route.post('login', 'AuthController.login')
-}).prefix('v1/api')
+  Route.get('/', 'UsersController.index')
+  Route.get('/:id', 'UsersController.show')
+  Route.put('/:id', 'UsersController.update')
+  Route.delete('/:id', 'UsersController.destroy')
+  Route.put('/reset-password', 'UsersController.resetPassword')
+})
+  .prefix('v1/api/user')
+  .middleware('auth')
 
 Route.group(() => {})
   .prefix('v1/api')
