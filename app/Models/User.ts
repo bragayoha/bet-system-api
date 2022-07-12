@@ -5,9 +5,9 @@ import {
   beforeSave,
   hasMany,
   HasMany,
-  beforeUpdate,
   manyToMany,
   ManyToMany,
+  beforeCreate,
 } from '@ioc:Adonis/Lucid/Orm'
 
 import { v4 as uuidv4 } from 'uuid'
@@ -62,10 +62,8 @@ export default class User extends BaseModel {
     }
   }
 
-  @beforeUpdate()
-  public static async hashUpdatedPassword(user: User) {
-    if (user.$dirty.password) {
-      user.password = await Hash.make(user.password)
-    }
+  @beforeCreate()
+  public static assignUuid(user: User) {
+    user.secureId = uuidv4()
   }
 }

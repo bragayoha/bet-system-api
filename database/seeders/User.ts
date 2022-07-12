@@ -9,7 +9,6 @@ export default class extends BaseSeeder {
   public async run() {
     const searchKeyAdmin = { email: 'admin@example.com' }
     const userAdmin = await User.updateOrCreate(searchKeyAdmin, {
-      secureId: uuidv4(),
       cpf: '00000000000',
       name: 'admin',
       email: 'admin@example.com',
@@ -17,11 +16,10 @@ export default class extends BaseSeeder {
     })
 
     const roleAdmin = await Role.findBy('name', 'admin')
-    await userAdmin.related('roles').attach([roleAdmin.id])
+    if (roleAdmin) await userAdmin.related('roles').attach([roleAdmin.id])
 
     const searchKeyPlayer = { email: 'player@example.com' }
     const userPlayer = await User.updateOrCreate(searchKeyPlayer, {
-      secureId: uuidv4(),
       cpf: '00000000001',
       name: 'player',
       email: 'player@example.com',
@@ -29,6 +27,6 @@ export default class extends BaseSeeder {
     })
 
     const rolePlayer = await Role.findBy('name', 'player')
-    await userPlayer.related('roles').attach([rolePlayer.id])
+    if (rolePlayer) await userPlayer.related('roles').attach([rolePlayer.id])
   }
 }

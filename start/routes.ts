@@ -25,8 +25,9 @@ import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
 Route.where('id', Route.matchers.number())
 
+Route.post('/login', 'AuthController.login')
+
 Route.group(() => {
-  Route.post('login', 'AuthController.login')
   Route.get('test_db_connection', async ({ response }: HttpContextContract) => {
     await Database.report().then(({ health }) => {
       const { healthy, message } = health
@@ -36,11 +37,11 @@ Route.group(() => {
       return response.status(500).json({ message })
     })
   })
-  Route.post('/', 'UsersController.store')
 }).prefix('v1/api')
 
 Route.group(() => {
   Route.get('/', 'UsersController.index')
+  Route.post('/', 'UsersController.store')
   Route.get('/:id', 'UsersController.show')
   Route.put('/:id', 'UsersController.update')
   Route.delete('/:id', 'UsersController.destroy')
