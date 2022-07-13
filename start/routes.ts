@@ -23,33 +23,26 @@ import Database from '@ioc:Adonis/Lucid/Database'
 
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
-Route.where('id', Route.matchers.number())
+Route.get('test_db_connection', async ({ response }: HttpContextContract) => {
+  await Database.report().then(({ health }) => {
+    const { healthy, message } = health
 
-Route.post('/login', 'AuthController.login')
+    if (healthy) return response.ok({ message })
 
-Route.group(() => {
-  Route.get('test_db_connection', async ({ response }: HttpContextContract) => {
-    await Database.report().then(({ health }) => {
-      const { healthy, message } = health
-
-      if (healthy) return response.ok({ message })
-
-      return response.status(500).json({ message })
-    })
+    return response.status(500).json({ message })
   })
+})
+
+// Public Routes Group
+Route.group(() => {
+  Route.post('/login', 'AuthController.login')
+  Route.post('/users/', 'UsersController.store')
 }).prefix('v1/api')
 
+// Private Routes Group
 Route.group(() => {
-  Route.get('/', 'UsersController.index')
-  Route.post('/', 'UsersController.store')
-  Route.get('/:id', 'UsersController.show')
-  Route.put('/:id', 'UsersController.update')
-  Route.delete('/:id', 'UsersController.destroy')
+  Route.resource('users/', 'UsersController').except(['store'])
   Route.put('/reset-password', 'UsersController.resetPassword')
 })
-  .prefix('v1/api/user')
-  .middleware('auth')
-
-Route.group(() => {})
   .prefix('v1/api')
-  .middleware('auth')
+  .middleware(['auth', 'is:admin'])

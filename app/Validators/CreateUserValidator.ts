@@ -14,7 +14,6 @@ export default class CreateUserValidator {
       ),
       rules.required(),
     ]),
-    secureId: schema.string([rules.uuid({ version: 4 })]),
     name: schema.string([rules.required()]),
     email: schema.string([
       rules.unique({ table: 'users', column: 'email' }),

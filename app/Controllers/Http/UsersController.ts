@@ -1,4 +1,5 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Role from 'App/Models/Role'
 import User from 'App/Models/User'
 import CreateUserValidator from 'App/Validators/CreateUserValidator'
 import ResetPasswordValidator from 'App/Validators/ResetPasswordValidator'
@@ -16,14 +17,31 @@ export default class UsersController {
   public async store({ response, request }: HttpContextContract) {
     const data = await request.validate(CreateUserValidator)
 
-    const user = await User.create({
-      name: data.name,
-      cpf: data.cpf,
-      email: data.email,
-      password: data.password,
-    })
+    let user
 
-    return response.json(user)
+    try {
+      user = await User.create({
+        name: data.name,
+        cpf: data.cpf,
+        email: data.email,
+        password: data.password,
+      })
+
+      const rolePlayer = await Role.findBy('name', 'player')
+
+      if (rolePlayer) await user.related('roles').attach([rolePlayer.id])
+    } catch (error) {
+      return response.badRequest({ message: 'Error in create user', originalError: error.message })
+    }
+
+    let userFind
+    try {
+      userFind = await User.query().where('id', user.id).preload('roles')
+    } catch (error) {
+      return response.badRequest({ message: 'Error in find user', originalError: error.message })
+    }
+
+    return response.ok({ userFind })
   }
 
   public async show({ request, response }: HttpContextContract) {
@@ -35,20 +53,28 @@ export default class UsersController {
     return response.json(user)
   }
 
-  public async update({ request, response }: HttpContextContract) {
-    const { id } = request.params()
-
-    const user = await User.findOrFail(id)
+  public async update({ request, response, params }: HttpContextContract) {
     const data = await request.validate(UpdateUserValidator)
 
-    user.merge({
-      name: data.name,
-      email: data.email,
-      cpf: data.cpf,
-    })
-    await user.save()
+    const userSecureId = params.id
 
-    return response.json(user)
+    let user
+
+    try {
+      user = await User.findByOrFail('secure_id', userSecureId)
+      user.merge({ name: data.name, cpf: data.cpf, email: data.email }).save()
+    } catch (error) {
+      return response.badRequest({ message: 'Error in update user', originalError: error.message })
+    }
+
+    let userFind
+    try {
+      userFind = await User.query().where('id', user.id).preload('roles')
+    } catch (error) {
+      return response.badRequest({ message: 'Error in find user', originalError: error.message })
+    }
+
+    return response.ok({ userFind })
   }
 
   public async destroy({ request, response }: HttpContextContract) {
