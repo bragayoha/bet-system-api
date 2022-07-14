@@ -99,7 +99,9 @@ export default class GamesController {
     const gameId = params.id
 
     try {
-      await Game.query().where('id', gameId).delete()
+      const game = await Game.findByOrFail('id', gameId)
+      await game.delete()
+
       return response.ok({ message: 'Game deleted successfully' })
     } catch (error) {
       return response.notFound({ message: 'Game not found', originalError: error.message })

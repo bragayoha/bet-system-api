@@ -1,5 +1,7 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Database from '@ioc:Adonis/Lucid/Database'
 import Bet from 'App/Models/Bet'
+import Game from 'App/Models/Game'
 import BetValidator from 'App/Validators/BetValidator'
 
 export default class BetsController {
@@ -19,18 +21,27 @@ export default class BetsController {
     }
   }
 
-  public async store({ response, request, params, auth }: HttpContextContract) {
+  public async store({ response, request, auth }: HttpContextContract) {
     const data = await request.validate(BetValidator)
+    const { game } = request.all()
 
     let bet
 
+    const trx = await Database.beginGlobalTransaction()
+
     try {
-      bet = await Bet.create({
-        numbers: data.numbers.join(),
-        userId: auth.user?.id,
-        gameId: params.gameId,
-      })
+      bet = await Bet.create(
+        {
+          numbers: data.numbers.join(),
+          userId: auth.user?.id,
+        },
+        trx
+      )
+
+      const hasGame = await Game.findBy('type', game)
+      if (hasGame) await bet.related('games').attach([hasGame.id], trx)
     } catch (error) {
+      trx.rollback()
       return response.badRequest({ message: 'Error in store bet', originalError: error.message })
     }
 
@@ -39,8 +50,11 @@ export default class BetsController {
     try {
       betFind = await Bet.query().where('id', bet.id)
     } catch (error) {
+      trx.rollback()
       return response.badRequest({ message: 'Error in find bet', originalError: error.message })
     }
+
+    trx.commit()
 
     return response.ok(betFind)
   }
@@ -61,7 +75,10 @@ export default class BetsController {
     const betId = params.id
 
     try {
-      await Bet.query().where('id', betId).delete()
+      const bet = await Bet.findByOrFail('id', betId)
+      await bet.delete()
+
+      return response.ok({ message: 'Bet deleted' })
     } catch (error) {
       return response.notFound({ message: 'Bet not found', originalError: error.message })
     }

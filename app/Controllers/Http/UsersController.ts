@@ -101,7 +101,8 @@ export default class UsersController {
     const userSecureId = params.id
 
     try {
-      await User.query().where('secure_id', userSecureId).delete()
+      const user = await User.findByOrFail('secure_id', userSecureId)
+      await user.delete()
 
       return response.ok({ message: 'Success in delete user' })
     } catch (error) {
