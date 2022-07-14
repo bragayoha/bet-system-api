@@ -11,7 +11,12 @@ export default class UpdateGameValidator {
   public schema = schema.create({
     type: schema.string.optional([
       rules.required(),
-      rules.unique({ table: 'games', column: 'type', whereNot: { id: this.refs.id } }),
+      rules.unique({
+        table: 'games',
+        column: 'type',
+        caseInsensitive: true,
+        whereNot: { id: this.refs.id },
+      }),
       rules.regex(/^[a-zA-ZÀ-ÿ\u00f1\u00d1]*$/g),
     ]),
     description: schema.string.optional([rules.required()]),

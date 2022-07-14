@@ -12,7 +12,7 @@ export default class CreateUserValidator {
     ]),
     name: schema.string([rules.required(), rules.regex(/^[ a-zA-ZÀ-ÿ\u00f1\u00d1]*$/g)]),
     email: schema.string([
-      rules.unique({ table: 'users', column: 'email' }),
+      rules.unique({ table: 'users', column: 'email', caseInsensitive: true }),
       rules.email(),
       rules.required(),
     ]),

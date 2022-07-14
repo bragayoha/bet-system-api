@@ -7,7 +7,7 @@ export default class CreateGameValidator {
   public schema = schema.create({
     type: schema.string([
       rules.required(),
-      rules.unique({ table: 'games', column: 'type' }),
+      rules.unique({ table: 'games', column: 'type', caseInsensitive: true }),
       rules.regex(/^[a-zA-ZÀ-ÿ\u00f1\u00d1]*$/g),
     ]),
     description: schema.string([rules.required()]),
@@ -17,7 +17,7 @@ export default class CreateGameValidator {
     color: schema.string([
       rules.required(),
       rules.regex(/^#?([a-f]|[A-F]|[0-9]){3}(([a-f]|[A-F]|[0-9]){3})?$/),
-      rules.unique({ table: 'games', column: 'color' }),
+      rules.unique({ table: 'games', column: 'color', caseInsensitive: true }),
     ]),
   })
 
