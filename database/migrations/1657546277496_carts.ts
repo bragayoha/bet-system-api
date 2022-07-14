@@ -1,12 +1,12 @@
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 
 export default class extends BaseSchema {
-  protected tableName = 'cart'
+  protected tableName = 'carts'
 
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id').unsigned().unique().notNullable()
-      table.integer('min_cart_value').notNullable()
+      table.integer('min_cart_value').defaultTo(0).notNullable()
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
        */

@@ -17,6 +17,9 @@ export default class Bet extends BaseModel {
   @column()
   public numbers: string
 
+  @column()
+  public cartId: number
+
   @column.dateTime({ autoCreate: true, serialize: (value) => value.toFormat('dd/MM/yyyy') })
   public createdAt: DateTime
 

@@ -20,9 +20,9 @@ export default class UpdateGameValidator {
       rules.regex(/^[a-zA-ZÀ-ÿ\u00f1\u00d1]*$/g),
     ]),
     description: schema.string.optional({ trim: true }, [rules.required()]),
-    range: schema.number.optional([rules.required()]),
-    price: schema.number.optional([rules.required()]),
-    minAndMaxValue: schema.number.optional([rules.required()]),
+    range: schema.number.optional([rules.required(), rules.unsigned()]),
+    price: schema.number.optional([rules.required(), rules.unsigned()]),
+    minAndMaxValue: schema.number.optional([rules.required(), rules.unsigned()]),
     color: schema.string.optional({ trim: true }, [
       rules.required(),
       rules.unique({ table: 'games', column: 'color', whereNot: { id: this.refs.id } }),

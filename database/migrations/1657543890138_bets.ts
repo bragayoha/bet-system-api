@@ -9,6 +9,7 @@ export default class extends BaseSchema {
       table.integer('user_id').unsigned().references('users.id').notNullable().onDelete('CASCADE')
       table.integer('game_id').unsigned().references('games.id').notNullable().onDelete('CASCADE')
       table.string('numbers', 100).notNullable()
+      table.integer('cart_id').unsigned().references('cart.id').notNullable().onDelete('CASCADE')
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL

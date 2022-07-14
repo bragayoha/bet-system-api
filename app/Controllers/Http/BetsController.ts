@@ -1,6 +1,7 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database'
 import Bet from 'App/Models/Bet'
+import Cart from 'App/Models/Cart'
 import Game from 'App/Models/Game'
 import BetValidator from 'App/Validators/BetValidator'
 
@@ -23,7 +24,7 @@ export default class BetsController {
 
   public async store({ response, request, auth }: HttpContextContract) {
     const data = await request.validate(BetValidator)
-    const { game } = request.all()
+    const { game, cartId } = request.all()
 
     let bet
 
@@ -40,6 +41,9 @@ export default class BetsController {
 
       const hasGame = await Game.findBy('type', game)
       if (hasGame) await bet.related('games').attach([hasGame.id], trx)
+
+      const hasCart = await Cart.findBy('id', cartId)
+      if (hasCart) await bet.related('carts').attach([hasCart.id], trx)
     } catch (error) {
       trx.rollback()
       return response.badRequest({ message: 'Error in store bet', originalError: error.message })
