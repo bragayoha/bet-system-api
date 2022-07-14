@@ -50,7 +50,7 @@ export default class GamesController {
   }
 
   public async show({ response, params }: HttpContextContract) {
-    const gameId = params.index
+    const gameId = params.id
 
     try {
       const game = await Game.query().where('id', gameId)

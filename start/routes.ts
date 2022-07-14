@@ -23,7 +23,12 @@ Route.group(() => {
 Route.group(() => {
   Route.resource('users/', 'UsersController').except(['store', 'index', 'destroy'])
   Route.put('/reset-password', 'UsersController.resetPassword')
+
   Route.get('games/:id', 'GamesController.show')
+
+  Route.get('bets/:id', 'BetsController.show')
+  Route.post('bets/:gameId', 'BetsController.store')
+  Route.delete('bets/:id', 'BetsController.destroy')
 })
   .prefix('v1/api')
   .middleware(['auth', 'is:player'])
@@ -31,8 +36,11 @@ Route.group(() => {
 // Admin Routes Group
 Route.group(() => {
   Route.resource('users/', 'UsersController').only(['index', 'destroy'])
+
   Route.resource('games/', 'GamesController').except(['show'])
-  Route.post('set-admin/:id', 'UsersController.setAdminRole')
+
+  // Route.post('set-admin/:id', 'UsersController.setAdminRole')
+  Route.get('bets/', 'BetsController.index')
 })
   .prefix('v1/api')
   .middleware(['auth', 'is:admin'])
