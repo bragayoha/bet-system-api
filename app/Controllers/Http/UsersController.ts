@@ -7,11 +7,25 @@ import UpdateUserValidator from 'App/Validators/UpdateUserValidator'
 
 export default class UsersController {
   public async index({ request, response }: HttpContextContract) {
-    const { page, perPage } = request.all()
+    const { page, perPage, noPaginate } = request.qs()
 
-    const users = await User.query().paginate(page, perPage)
+    if (noPaginate) {
+      return User.query().preload('roles', (roleTable) => {
+        roleTable.select('id', 'name')
+      })
+    }
 
-    return response.json(users)
+    try {
+      const users = await User.query()
+        .preload('roles', (roleTable) => {
+          roleTable.select('id', 'name')
+        })
+        .paginate(page || 1, perPage || 10)
+
+      return response.ok(users)
+    } catch (error) {
+      return response.badRequest({ message: 'Error in list users', originalError: error.message })
+    }
   }
 
   public async store({ response, request }: HttpContextContract) {
@@ -44,13 +58,19 @@ export default class UsersController {
     return response.ok({ userFind })
   }
 
-  public async show({ request, response }: HttpContextContract) {
-    const { id } = request.params()
+  public async show({ response, params }: HttpContextContract) {
+    const userSecureId = params.id
 
-    const user = await User.findOrFail(id)
-    await user.load('bets')
+    try {
+      const user = await User.query()
+        .where('secure_id', userSecureId)
+        .preload('roles')
+        .preload('bets')
 
-    return response.json(user)
+      return response.ok(user)
+    } catch (error) {
+      return response.notFound({ message: 'User not found', originalError: error.message })
+    }
   }
 
   public async update({ request, response, params }: HttpContextContract) {
@@ -77,14 +97,16 @@ export default class UsersController {
     return response.ok({ userFind })
   }
 
-  public async destroy({ request, response }: HttpContextContract) {
-    const { id } = request.params()
+  public async destroy({ response, params }: HttpContextContract) {
+    const userSecureId = params.id
 
-    const user = await User.findOrFail(id)
+    try {
+      await User.query().where('secure_id', userSecureId).delete()
 
-    await user.delete()
-
-    return response.status(200)
+      return response.ok({ message: 'Success in delete user' })
+    } catch (error) {
+      return response.notFound({ message: 'User not found', originalError: error.message })
+    }
   }
 
   public async resetPassword({ request, response, auth }: HttpContextContract) {
@@ -98,4 +120,17 @@ export default class UsersController {
 
     return response.status(202)
   }
+
+  // public async setAdminRole({ response, params }: HttpContextContract) {
+  //   const secureId = params.id
+
+  //   try {
+  //     const user = await User.query().where('secure_id', secureId)
+
+  //     const roleAdmin = await Role.findBy('name', 'admin')
+  //     if (roleAdmin) await user.related('roles').attach([roleAdmin.id])
+  //   } catch (error) {
+  //     return response.badRequest({ message: 'User not found', originalError: error.message })
+  //   }
+  // }
 }

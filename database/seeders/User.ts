@@ -15,9 +15,6 @@ export default class extends BaseSeeder {
       password: 'test123',
     })
 
-    const roleAdmin = await Role.findBy('name', 'admin')
-    if (roleAdmin) await userAdmin.related('roles').attach([roleAdmin.id])
-
     const searchKeyPlayer = { email: 'player@example.com' }
     const userPlayer = await User.updateOrCreate(searchKeyPlayer, {
       cpf: '00000000001',
@@ -26,7 +23,11 @@ export default class extends BaseSeeder {
       password: 'test123',
     })
 
+    const roleAdmin = await Role.findBy('name', 'admin')
     const rolePlayer = await Role.findBy('name', 'player')
+
+    if (roleAdmin && rolePlayer)
+      await userAdmin.related('roles').attach([roleAdmin.id, rolePlayer.id])
     if (rolePlayer) await userPlayer.related('roles').attach([rolePlayer.id])
   }
 }

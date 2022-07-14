@@ -7,14 +7,10 @@ export default class CreateUserValidator {
   public schema = schema.create({
     cpf: schema.string([
       rules.unique({ table: 'users', column: 'cpf' }),
-      rules.minLength(11),
-      rules.maxLength(11),
-      rules.regex(
-        /([0-9]{2}[\.]?[0-9]{3}[\.]?[0-9]{3}[\/]?[0-9]{4}[-]?[0-9]{2})|([0-9]{3}[\.]?[0-9]{3}[\.]?[0-9]{3}[-]?[0-9]{2})/
-      ),
+      rules.regex(/^\d{3}.\d{3}.\d{3}-\d{2}$/),
       rules.required(),
     ]),
-    name: schema.string([rules.required()]),
+    name: schema.string([rules.required(), rules.regex(/^[ a-zA-ZÀ-ÿ\u00f1\u00d1]*$/g)]),
     email: schema.string([
       rules.unique({ table: 'users', column: 'email' }),
       rules.email(),
