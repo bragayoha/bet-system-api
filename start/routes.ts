@@ -39,7 +39,7 @@ Route.group(() => {
 
   Route.resource('games/', 'GamesController').except(['show'])
 
-  // Route.post('set-admin/:id', 'UsersController.setAdminRole')
+  Route.post('access-allow/:id', 'UsersController.AccessAllow')
   Route.get('bets/', 'BetsController.index')
 })
   .prefix('v1/api')

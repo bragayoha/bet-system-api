@@ -1,6 +1,7 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Role from 'App/Models/Role'
 import User from 'App/Models/User'
+import AccessAllowValidator from 'App/Validators/AccessAllowValidator'
 import CreateUserValidator from 'App/Validators/CreateUserValidator'
 import ResetPasswordValidator from 'App/Validators/ResetPasswordValidator'
 import UpdateUserValidator from 'App/Validators/UpdateUserValidator'
@@ -122,16 +123,32 @@ export default class UsersController {
     return response.status(202)
   }
 
-  // public async setAdminRole({ response, params }: HttpContextContract) {
-  //   const secureId = params.id
+  public async AccessAllow({ response, request }: HttpContextContract) {
+    await request.validate(AccessAllowValidator)
 
-  //   try {
-  //     const user = await User.query().where('secure_id', secureId)
+    const { userId, roles } = request.all()
 
-  //     const roleAdmin = await Role.findBy('name', 'admin')
-  //     if (roleAdmin) await user.related('roles').attach([roleAdmin.id])
-  //   } catch (error) {
-  //     return response.badRequest({ message: 'User not found', originalError: error.message })
-  //   }
-  // }
+    try {
+      const userAllow = await User.findByOrFail('id', userId)
+
+      let roleIds: number[] = []
+
+      await Promise.all(
+        roles.map(async (roleName) => {
+          const hasRole = await Role.findBy('name', roleName)
+          if (hasRole) roleIds.push(hasRole.id)
+        })
+      )
+
+      await userAllow.related('roles').sync(roleIds)
+    } catch (error) {
+      return response.badRequest({ message: 'Error in access allow', originalError: error.message })
+    }
+
+    try {
+      return User.query().where('id', userId).preload('roles').firstOrFail()
+    } catch (error) {
+      return response.badRequest({ message: 'Error in find user', originalError: error.message })
+    }
+  }
 }
