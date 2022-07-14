@@ -7,10 +7,10 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id').unsigned().unique().notNullable()
       table.string('type', 50).unique().notNullable()
-      table.string('description', 100).notNullable()
+      table.string('description', 500).notNullable()
       table.integer('range').notNullable()
       table.decimal('price').notNullable()
-      table.integer('min_and_max_value').notNullable()
+      table.integer('min_and_max_number').notNullable()
       table.string('color', 7).unique().notNullable()
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL

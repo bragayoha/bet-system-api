@@ -31,7 +31,7 @@ export default class GamesController {
         description: data.description,
         range: data.range,
         price: data.price,
-        minAndMaxValue: data.minAndMaxValue,
+        minAndMaxNumber: data.minAndMaxValue,
         color: data.color,
       })
     } catch (error) {
