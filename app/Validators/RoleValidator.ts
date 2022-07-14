@@ -5,7 +5,7 @@ export default class RoleValidator {
   constructor(protected ctx: HttpContextContract) {}
 
   public schema = schema.create({
-    name: schema.string([rules.required()]),
+    name: schema.string({ trim: true }, [rules.required()]),
   })
 
   public messages = {}

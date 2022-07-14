@@ -9,7 +9,7 @@ export default class UpdateGameValidator {
   })
 
   public schema = schema.create({
-    type: schema.string.optional([
+    type: schema.string.optional({ trim: true }, [
       rules.required(),
       rules.unique({
         table: 'games',
@@ -19,11 +19,11 @@ export default class UpdateGameValidator {
       }),
       rules.regex(/^[a-zA-ZÀ-ÿ\u00f1\u00d1]*$/g),
     ]),
-    description: schema.string.optional([rules.required()]),
+    description: schema.string.optional({ trim: true }, [rules.required()]),
     range: schema.number.optional([rules.required()]),
     price: schema.number.optional([rules.required()]),
     minAndMaxValue: schema.number.optional([rules.required()]),
-    color: schema.string.optional([
+    color: schema.string.optional({ trim: true }, [
       rules.required(),
       rules.unique({ table: 'games', column: 'color', whereNot: { id: this.refs.id } }),
       rules.regex(/^#?([a-f]|[A-F]|[0-9]){3}(([a-f]|[A-F]|[0-9]){3})?$/),
