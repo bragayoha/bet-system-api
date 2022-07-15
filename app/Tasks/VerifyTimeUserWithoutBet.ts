@@ -10,7 +10,7 @@ import Bet from 'App/Models/Bet'
 
 export default class VerifyTimeUserWithoutBet extends BaseTask {
   public static get schedule() {
-    return '0 0 9 * * *'
+    return '*/5 * 14 * * *'
   }
   /**
    * Set enable use .lock file for block run retry task
@@ -25,6 +25,25 @@ export default class VerifyTimeUserWithoutBet extends BaseTask {
     dayjs.locale('pt-br')
 
     try {
+      // const sevenDaysLatter = dayjs(new Date()).subtract(7, 'd')
+      // const users = await User.query().whereHas(
+      //   'bets',
+      //   (query) => {
+      //     query.where('created_at', '>', sevenDaysLatter.format('YYYY-MM-DD HH:mm:ss'))
+      //   },
+      //   '!=',
+      //   '0'
+      // )
+      // users.forEach(async (user) => {
+      //   try {
+      //     console.log('entrou', user.name)
+      //     await sendMail(user, 'email/let_bet_us')
+      //     return Logger.info('Success in send email')
+      //   } catch (error) {
+      //     return Logger.error('Error in send email')
+      //   }
+      // })
+
       const users = await User.all()
 
       await Promise.all(
