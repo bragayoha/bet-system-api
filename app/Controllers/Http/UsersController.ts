@@ -1,6 +1,8 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Database from '@ioc:Adonis/Lucid/Database'
 import Role from 'App/Models/Role'
 import User from 'App/Models/User'
+import { sendMail } from 'App/Services/sendMail'
 import AccessAllowValidator from 'App/Validators/AccessAllowValidator'
 import CreateUserValidator from 'App/Validators/CreateUserValidator'
 import ResetPasswordValidator from 'App/Validators/ResetPasswordValidator'
@@ -34,18 +36,23 @@ export default class UsersController {
 
     let user
 
+    const trx = await Database.beginGlobalTransaction()
     try {
-      user = await User.create({
-        name: data.name,
-        cpf: data.cpf,
-        email: data.email,
-        password: data.password,
-      })
+      user = await User.create(
+        {
+          name: data.name,
+          cpf: data.cpf,
+          email: data.email,
+          password: data.password,
+        },
+        trx
+      )
 
       const rolePlayer = await Role.findBy('name', 'player')
 
       if (rolePlayer) await user.related('roles').attach([rolePlayer.id])
     } catch (error) {
+      trx.rollback()
       return response.badRequest({ message: 'Error in create user', originalError: error.message })
     }
 
@@ -53,9 +60,21 @@ export default class UsersController {
     try {
       userFind = await User.query().where('id', user.id).preload('roles')
     } catch (error) {
+      trx.rollback()
       return response.badRequest({ message: 'Error in find user', originalError: error.message })
     }
 
+    try {
+      await sendMail(user, 'email/welcome')
+    } catch (error) {
+      trx.rollback()
+      return response.badRequest({
+        message: 'Error in send welcome email',
+        originalError: error.message,
+      })
+    }
+
+    trx.commit()
     return response.ok({ userFind })
   }
 
@@ -115,11 +134,29 @@ export default class UsersController {
     const id = auth.user?.id
     const password = await request.validate(ResetPasswordValidator)
 
-    const user = await User.findOrFail(id)
+    const trx = await Database.beginGlobalTransaction()
+    let user
+    try {
+      user = await User.findOrFail(id)
 
-    user.merge(password)
-    await user.save()
+      user.merge(password).useTransaction(trx)
+      await user.save()
+    } catch (error) {
+      trx.rollback()
+      return response.badRequest({
+        message: 'Error in reset password',
+        originalError: error.message,
+      })
+    }
 
+    try {
+      await sendMail(user, 'email/reset_password')
+    } catch (error) {
+      trx.rollback()
+      return response.badRequest({ message: 'Error in send email', originalError: error.message })
+    }
+
+    trx.commit()
     return response.status(202)
   }
 
