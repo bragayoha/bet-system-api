@@ -1,8 +1,9 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database'
 import Bet from 'App/Models/Bet'
-import Cart from 'App/Models/Cart'
-import Game from 'App/Models/Game'
+
+import User from 'App/Models/User'
+import { sendMail } from 'App/Services/sendMail'
 import BetValidator from 'App/Validators/BetValidator'
 
 export default class BetsController {
@@ -24,8 +25,8 @@ export default class BetsController {
 
   public async store({ response, request, auth }: HttpContextContract) {
     const data = await request.validate(BetValidator)
-    const { game, cartId } = request.all()
 
+    const user = await User.findByOrFail('id', auth.user?.id)
     let bet
 
     const trx = await Database.beginGlobalTransaction()
@@ -35,15 +36,10 @@ export default class BetsController {
         {
           numbers: data.numbers.join(),
           userId: auth.user?.id,
+          gameId: data.game,
         },
         trx
       )
-
-      const hasGame = await Game.findBy('type', game)
-      if (hasGame) await bet.related('games').attach([hasGame.id], trx)
-
-      const hasCart = await Cart.findBy('id', cartId)
-      if (hasCart) await bet.related('carts').attach([hasCart.id], trx)
     } catch (error) {
       trx.rollback()
       return response.badRequest({ message: 'Error in store bet', originalError: error.message })
@@ -58,6 +54,15 @@ export default class BetsController {
       return response.badRequest({ message: 'Error in find bet', originalError: error.message })
     }
 
+    try {
+      await sendMail(user, 'email/new_bet')
+    } catch (error) {
+      trx.rollback()
+      return response.badRequest({
+        message: 'Error in reset password',
+        originalError: error.message,
+      })
+    }
     trx.commit()
 
     return response.ok(betFind)

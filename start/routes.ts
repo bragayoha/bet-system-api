@@ -27,7 +27,7 @@ Route.group(() => {
   Route.get('games/:id', 'GamesController.show')
 
   Route.get('bets/:id', 'BetsController.show')
-  Route.post('bets/:gameId', 'BetsController.store')
+  Route.post('bets/', 'BetsController.store')
   Route.delete('bets/:id', 'BetsController.destroy')
 })
   .prefix('v1/api')
