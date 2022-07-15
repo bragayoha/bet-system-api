@@ -7,6 +7,7 @@ import AccessAllowValidator from 'App/Validators/AccessAllowValidator'
 import CreateUserValidator from 'App/Validators/CreateUserValidator'
 import ResetPasswordValidator from 'App/Validators/ResetPasswordValidator'
 import UpdateUserValidator from 'App/Validators/UpdateUserValidator'
+import dayjs from 'dayjs'
 
 export default class UsersController {
   public async index({ request, response }: HttpContextContract) {
@@ -85,7 +86,11 @@ export default class UsersController {
       const user = await User.query()
         .where('secure_id', userSecureId)
         .preload('roles')
-        .preload('bets')
+        .preload('bets', (bet) => {
+          const currentDateLess30days = dayjs().subtract(30, 'd').format()
+
+          bet.where('created_at', '>', currentDateLess30days)
+        })
 
       return response.ok(user)
     } catch (error) {

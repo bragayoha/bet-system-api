@@ -5,6 +5,8 @@ import isLeapYear from 'dayjs/plugin/isLeapYear'
 import 'dayjs/locale/pt-br'
 
 import User from 'App/Models/User'
+import { sendMail } from 'App/Services/sendMail'
+import Bet from 'App/Models/Bet'
 
 export default class VerifyTimeUserWithoutBet extends BaseTask {
   public static get schedule() {
@@ -23,24 +25,33 @@ export default class VerifyTimeUserWithoutBet extends BaseTask {
     dayjs.locale('pt-br')
 
     try {
-      const betsUser = await User.all()
+      const users = await User.all()
 
       await Promise.all(
-        betsUser.map(async (bet) => {
-          const { createdAt } = bet.serialize()
+        users.map(async (user) => {
+          const bets = await Bet.query().where('user_id', user.id)
 
-          const newDateMoreThan7days = dayjs(createdAt).add(7, 'd').format()
-          const currentDate = dayjs().format()
+          await Promise.all(
+            bets.map(async (bet) => {
+              const createDate = bet.createdAt.toString()
 
-          if (newDateMoreThan7days < currentDate)
-            try {
-              return Logger.info('Success in send email')
-            } catch (error) {
-              return Logger.error('Error in send email')
-            }
+              const newDateMoreThan7days = dayjs(createDate).add(7, 'd').format()
+              const currentDate = dayjs().format()
+
+              if (newDateMoreThan7days < currentDate) {
+                try {
+                  await sendMail(user, 'email/let_bet_us')
+                  return Logger.info('Success in send email')
+                } catch (error) {
+                  return Logger.error('Error in send email')
+                }
+              }
+            })
+          )
         })
       )
-    } catch (error) {}
-    Logger.info('Handled')
+    } catch (error) {
+      Logger.error(error)
+    }
   }
 }
