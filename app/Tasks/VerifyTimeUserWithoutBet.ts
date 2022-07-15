@@ -10,7 +10,7 @@ import Bet from 'App/Models/Bet'
 
 export default class VerifyTimeUserWithoutBet extends BaseTask {
   public static get schedule() {
-    return '*/5 * 14 * * *'
+    return '* * 9 * * *'
   }
   /**
    * Set enable use .lock file for block run retry task
