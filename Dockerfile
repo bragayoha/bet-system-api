@@ -1,6 +1,6 @@
 FROM node:16.15.1
 
-WORKDIR /app
+WORKDIR /user/app
 
 COPY package*.json ./
 
@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 3333
 
-CMD ["npm","run","dev"]
+CMD ["node","ace","serve","--watch"]

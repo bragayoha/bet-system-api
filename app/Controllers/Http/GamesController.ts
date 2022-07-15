@@ -1,4 +1,5 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Cart from 'App/Models/Cart'
 import Game from 'App/Models/Game'
 import CreateGameValidator from 'App/Validators/CreateGameValidator'
 import UpdateGameValidator from 'App/Validators/UpdateGameValidator'
@@ -7,6 +8,8 @@ export default class GamesController {
   public async index({ request, response }: HttpContextContract) {
     const { page, perPage, noPaginate } = request.qs()
 
+    const cart = await Cart.query().first()
+
     if (noPaginate) {
       return Game.query()
     }
@@ -14,7 +17,7 @@ export default class GamesController {
     try {
       const games = await Game.query().paginate(page || 1, perPage || 10)
 
-      return response.ok(games)
+      return response.ok({ cart, games })
     } catch (error) {
       return response.badRequest({ message: 'Error in list games', originalError: error.message })
     }
