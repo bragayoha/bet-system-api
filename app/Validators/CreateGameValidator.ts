@@ -13,7 +13,7 @@ export default class CreateGameValidator {
     description: schema.string({ trim: true }, [rules.required()]),
     range: schema.number([rules.required(), rules.unsigned()]),
     price: schema.number([rules.required(), rules.unsigned()]),
-    minAndMaxValue: schema.number([rules.required(), rules.unsigned()]),
+    minAndMaxNumber: schema.number([rules.required(), rules.unsigned()]),
     color: schema.string({ trim: true }, [
       rules.required(),
       rules.regex(/^#?([a-f]|[A-F]|[0-9]){3}(([a-f]|[A-F]|[0-9]){3})?$/),

@@ -5,7 +5,7 @@ import User from './User'
 import Game from './Game'
 
 export default class Bet extends BaseModel {
-  @column({ isPrimary: true })
+  @column({ isPrimary: true, serializeAs: null })
   public id: number
 
   @column()

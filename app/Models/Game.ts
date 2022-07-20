@@ -3,7 +3,7 @@ import { BaseModel, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import Bet from './Bet'
 
 export default class Game extends BaseModel {
-  @column({ isPrimary: true })
+  @column({ isPrimary: true, serializeAs: null })
   public id: number
 
   @column()
@@ -24,13 +24,13 @@ export default class Game extends BaseModel {
   @column()
   public color: string
 
-  @column.dateTime({ autoCreate: true, serialize: (value) => value.toFormat('dd/MM/yyyy') })
+  @column.dateTime({ autoCreate: true, serializeAs: null })
   public createdAt: DateTime
 
   @column.dateTime({
     autoCreate: true,
     autoUpdate: true,
-    serialize: (value) => value.toFormat('dd/MM/yyyy'),
+    serializeAs: null,
   })
   public updatedAt: DateTime
 

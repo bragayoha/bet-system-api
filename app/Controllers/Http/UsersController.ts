@@ -1,3 +1,4 @@
+import Hash from '@ioc:Adonis/Core/Hash'
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database'
 import Role from 'App/Models/Role'
@@ -135,25 +136,24 @@ export default class UsersController {
     }
   }
 
-  public async resetPassword({ request, response, auth }: HttpContextContract) {
-    const id = auth.user?.id
-    const password = await request.validate(ResetPasswordValidator)
+  public async forgetPassword({ response, params }: HttpContextContract) {
+    const secureId = params.id
+
+    let user
 
     const trx = await Database.beginGlobalTransaction()
-    let user
-    try {
-      user = await User.findOrFail(id)
 
-      user.merge(password).useTransaction(trx)
-      await user.save()
+    try {
+      user = await User.findByOrFail('secure_id', secureId)
+      const rememberMeToken = await Hash.make(user.cpf + dayjs().format())
+      user.merge({ rememberMeToken: rememberMeToken }, trx).save()
     } catch (error) {
       trx.rollback()
       return response.badRequest({
-        message: 'Error in reset password',
+        message: 'Error in generate token',
         originalError: error.message,
       })
     }
-
     try {
       await sendMail(user, 'email/reset_password')
     } catch (error) {
@@ -162,7 +162,30 @@ export default class UsersController {
     }
 
     trx.commit()
-    return response.status(202)
+    return response.ok({ message: 'Success in send recovery email!' })
+  }
+
+  public async resetPassword({ request, response }: HttpContextContract) {
+    const data = await request.validate(ResetPasswordValidator)
+
+    const trx = await Database.beginGlobalTransaction()
+    let user
+    try {
+      user = await User.findByOrFail('remember_me_token', data.rememberMeToken)
+      if (user.rememberMeToken === data.rememberMeToken) {
+        user.merge(data.password).useTransaction(trx)
+        await user.save()
+      }
+    } catch (error) {
+      trx.rollback()
+      return response.badRequest({
+        message: 'Error in reset password',
+        originalError: error.message,
+      })
+    }
+
+    trx.commit()
+    return response.ok({ message: 'Success in reset password' })
   }
 
   public async AccessAllow({ response, request }: HttpContextContract) {

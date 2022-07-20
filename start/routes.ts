@@ -22,7 +22,7 @@ Route.group(() => {
 // Private Routes Group
 Route.group(() => {
   Route.resource('users/', 'UsersController').except(['store', 'index', 'destroy'])
-  Route.put('/reset-password', 'UsersController.resetPassword')
+  Route.put('reset-password', 'UsersController.resetPassword')
 
   Route.get('games/:id', 'GamesController.show')
 
@@ -41,6 +41,7 @@ Route.group(() => {
 
   Route.post('access-allow/:id', 'UsersController.AccessAllow')
   Route.get('bets/', 'BetsController.index')
+  Route.put('forget-password/:id', 'UsersController.forgetPassword')
 })
   .prefix('v1/api')
   .middleware(['auth', 'is:admin'])

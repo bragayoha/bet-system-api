@@ -6,6 +6,7 @@ export default class ResetPasswordValidator {
 
   public schema = schema.create({
     password: schema.string([rules.confirmed(), rules.minLength(6), rules.required()]),
+    rememberMeToken: schema.string({ trim: true }, [rules.required()]),
   })
 
   public messages = {}

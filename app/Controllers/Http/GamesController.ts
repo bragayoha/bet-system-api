@@ -5,19 +5,13 @@ import CreateGameValidator from 'App/Validators/CreateGameValidator'
 import UpdateGameValidator from 'App/Validators/UpdateGameValidator'
 
 export default class GamesController {
-  public async index({ request, response }: HttpContextContract) {
-    const { page, perPage, noPaginate } = request.qs()
-
+  public async index({ response }: HttpContextContract) {
     const cart = await Cart.query().first()
 
-    if (noPaginate) {
-      return Game.query()
-    }
-
     try {
-      const games = await Game.query().paginate(page || 1, perPage || 10)
+      const games = await Game.query()
 
-      return response.ok({ cart, games })
+      return response.ok({ minCartValue: cart?.minCartValue, types: games })
     } catch (error) {
       return response.badRequest({ message: 'Error in list games', originalError: error.message })
     }
@@ -34,7 +28,7 @@ export default class GamesController {
         description: data.description,
         range: data.range,
         price: data.price,
-        minAndMaxNumber: data.minAndMaxValue,
+        minAndMaxNumber: data.minAndMaxNumber,
         color: data.color,
       })
     } catch (error) {

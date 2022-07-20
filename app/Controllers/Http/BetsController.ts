@@ -28,7 +28,6 @@ export default class BetsController {
 
     const user = await User.findByOrFail('id', auth.user?.id)
     let bet
-
     const trx = await Database.beginGlobalTransaction()
 
     try {
@@ -59,13 +58,19 @@ export default class BetsController {
     } catch (error) {
       trx.rollback()
       return response.badRequest({
-        message: 'Error in reset password',
+        message: 'Error in send email',
         originalError: error.message,
       })
     }
     trx.commit()
 
     return response.ok(betFind)
+    // return response.json({
+    //   userId: 3,
+    //   numbersPlayed:
+    //     '[1, 2, 3, 4, 5, 6],[2,3,6,12,18,20],[1, 2, 3, 4, 5, 6],[2,3,6,12,18,20],[1, 2, 3, 4, 5, 6],[2,3,6,12,18,20],[1, 2, 3, 4, 5, 6]',
+    //   TotalPrice: 31.5,
+    // })
   }
 
   public async show({ response, params }: HttpContextContract) {

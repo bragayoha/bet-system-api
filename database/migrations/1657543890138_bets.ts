@@ -8,7 +8,7 @@ export default class extends BaseSchema {
       table.increments('id').unsigned().notNullable()
       table.integer('user_id').unsigned().references('users.id').notNullable().onDelete('CASCADE')
       table.integer('game_id').unsigned().references('games.id').notNullable().onDelete('CASCADE')
-      table.string('numbers', 100).notNullable()
+      table.string('isso_ai').notNullable()
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
