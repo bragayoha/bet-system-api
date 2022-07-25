@@ -38,7 +38,7 @@ export default class UsersController {
 
     let user
 
-    const trx = await Database.beginGlobalTransaction()
+    const trx = await Database.transaction()
     try {
       user = await User.create(
         {
@@ -106,10 +106,13 @@ export default class UsersController {
 
     let user
 
+    const trx = await Database.transaction()
+
     try {
       user = await User.findByOrFail('secure_id', userSecureId)
-      user.merge({ name: data.name, cpf: data.cpf, email: data.email }).save()
+      user.merge({ name: data.name, cpf: data.cpf, email: data.email }, trx).save()
     } catch (error) {
+      trx.rollback()
       return response.badRequest({ message: 'Error in update user', originalError: error.message })
     }
 
@@ -117,9 +120,11 @@ export default class UsersController {
     try {
       userFind = await User.query().where('id', user.id).preload('roles')
     } catch (error) {
+      trx.rollback()
       return response.badRequest({ message: 'Error in find user', originalError: error.message })
     }
 
+    trx.commit()
     return response.ok({ userFind })
   }
 
@@ -141,7 +146,7 @@ export default class UsersController {
 
     let user
 
-    const trx = await Database.beginGlobalTransaction()
+    const trx = await Database.transaction()
 
     try {
       user = await User.findByOrFail('secure_id', secureId)
@@ -168,7 +173,7 @@ export default class UsersController {
   public async resetPassword({ request, response }: HttpContextContract) {
     const data = await request.validate(ResetPasswordValidator)
 
-    const trx = await Database.beginGlobalTransaction()
+    const trx = await Database.transaction()
     let user
     try {
       user = await User.findByOrFail('remember_me_token', data.rememberMeToken)

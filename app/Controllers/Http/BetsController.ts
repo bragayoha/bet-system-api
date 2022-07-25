@@ -1,6 +1,7 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database'
 import Bet from 'App/Models/Bet'
+import Cart from 'App/Models/Cart'
 
 import User from 'App/Models/User'
 import { sendMail } from 'App/Services/sendMail'
@@ -27,8 +28,10 @@ export default class BetsController {
     const data = await request.validate(BetValidator)
 
     const user = await User.findByOrFail('id', auth.user?.id)
+    const cart = await Cart.findByOrFail('id', 1)
+
     let bet
-    const trx = await Database.beginGlobalTransaction()
+    const trx = await Database.transaction()
 
     try {
       bet = await Bet.create(
@@ -65,12 +68,6 @@ export default class BetsController {
     trx.commit()
 
     return response.ok(betFind)
-    // return response.json({
-    //   userId: 3,
-    //   numbersPlayed:
-    //     '[1, 2, 3, 4, 5, 6],[2,3,6,12,18,20],[1, 2, 3, 4, 5, 6],[2,3,6,12,18,20],[1, 2, 3, 4, 5, 6],[2,3,6,12,18,20],[1, 2, 3, 4, 5, 6]',
-    //   TotalPrice: 31.5,
-    // })
   }
 
   public async show({ response, params }: HttpContextContract) {

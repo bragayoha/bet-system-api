@@ -1,4 +1,5 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Database from '@ioc:Adonis/Lucid/Database'
 import Cart from 'App/Models/Cart'
 import Game from 'App/Models/Game'
 import CreateGameValidator from 'App/Validators/CreateGameValidator'
@@ -22,16 +23,22 @@ export default class GamesController {
 
     let game
 
+    const trx = await Database.transaction()
+
     try {
-      game = await Game.create({
-        type: data.type,
-        description: data.description,
-        range: data.range,
-        price: data.price,
-        minAndMaxNumber: data.minAndMaxNumber,
-        color: data.color,
-      })
+      game = await Game.create(
+        {
+          type: data.type,
+          description: data.description,
+          range: data.range,
+          price: data.price,
+          minAndMaxNumber: data.minAndMaxNumber,
+          color: data.color,
+        },
+        trx
+      )
     } catch (error) {
+      trx.rollback()
       return response.badRequest({ message: 'Error in create game', originalError: error.message })
     }
 
@@ -40,9 +47,11 @@ export default class GamesController {
     try {
       gameFind = await Game.query().where('id', game.id)
     } catch (error) {
+      trx.rollback()
       return response.badRequest({ message: 'Error in game find', originalError: error.message })
     }
 
+    trx.commit()
     return response.ok(gameFind)
   }
 
@@ -65,19 +74,25 @@ export default class GamesController {
 
     let game
 
+    const trx = await Database.transaction()
+
     try {
       game = await Game.findByOrFail('id', gameId)
       game
-        .merge({
-          type: data.type,
-          description: data.description,
-          range: data.range,
-          price: data.price,
-          minAndMaxValue: data.minAndMaxValue,
-          color: data.color,
-        })
+        .merge(
+          {
+            type: data.type,
+            description: data.description,
+            range: data.range,
+            price: data.price,
+            minAndMaxValue: data.minAndMaxValue,
+            color: data.color,
+          },
+          trx
+        )
         .save()
     } catch (error) {
+      trx.rollback()
       return response.badRequest({ message: 'Error in update game', originalError: error.message })
     }
 
@@ -86,9 +101,11 @@ export default class GamesController {
     try {
       gameFind = await Game.query().where('id', game.id)
     } catch (error) {
+      trx.rollback()
       return response.badRequest({ message: 'Error in find game', originalError: error.message })
     }
 
+    trx.commit()
     return response.ok(gameFind)
   }
 
