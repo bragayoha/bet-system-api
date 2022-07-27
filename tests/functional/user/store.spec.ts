@@ -77,4 +77,26 @@ test.group('Users store', (group) => {
       ],
     })
   })
+
+  test('error in store new user in database with invalid cpf format', async ({ client, route }) => {
+    const response = await client.post(route('UsersController.store')).form({
+      name: 'Test User',
+      email: 'user@test.com',
+      cpf: '000.000.000-0',
+      password: 'test123',
+      password_confirmation: 'test123',
+    })
+
+    response.assertStatus(422)
+
+    response.assertBodyContains({
+      errors: [
+        {
+          message: 'regex validation failed',
+          field: 'cpf',
+          rule: 'regex',
+        },
+      ],
+    })
+  })
 })

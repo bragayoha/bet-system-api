@@ -29,14 +29,15 @@ test.group('Game show', (group) => {
     const response = await client.get('/v1/api/games/1').bearerToken(token)
 
     response.assertStatus(200)
-
-    response.assertBodyContains({
-      type: String,
-      description: String,
-      range: Number,
-      price: Number,
-      min_and_max_number: Number,
-      color: String,
-    })
+    response.assertBodyContains([
+      {
+        type: String,
+        description: String,
+        range: Number,
+        price: Number,
+        min_and_max_number: Number,
+        color: String,
+      },
+    ])
   })
 })
