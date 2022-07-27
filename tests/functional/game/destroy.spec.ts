@@ -8,7 +8,7 @@ test.group('Game destroy', (group) => {
     return () => Database.rollbackGlobalTransaction()
   })
 
-  test('user must be logged in before store a game', async ({ client }) => {
+  test('user must be logged in before destroy a game', async ({ client }) => {
     const response = await client.delete('/v1/api/games/1')
 
     response.assertStatus(401)

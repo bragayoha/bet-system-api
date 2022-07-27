@@ -8,7 +8,7 @@ test.group('Game update', (group) => {
     return () => Database.rollbackGlobalTransaction()
   })
 
-  test('user must be logged in before store a game', async ({ client }) => {
+  test('user must be logged in before update a game', async ({ client }) => {
     const response = await client.put('/v1/api/games/1')
 
     response.assertStatus(401)
