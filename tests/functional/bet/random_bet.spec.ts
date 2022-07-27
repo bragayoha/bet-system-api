@@ -92,13 +92,13 @@ test.group('Bet random bets', (group) => {
         {
           rule: 'exists',
           field: 'game',
-          message: 'exists validation failed',
+          message: 'exists validation failure',
         },
       ],
     })
   })
 
-  test('bet must be a min value (setting by cart)', async ({ client, route }) => {
+  test('error in store bet because array isnt valid (just numbers)', async ({ client, route }) => {
     const login = await client.post(route('AuthController.login')).form({
       email: 'admin@example.com',
       password: 'test123',
@@ -108,7 +108,7 @@ test.group('Bet random bets', (group) => {
 
     const response = await client
       .post(route('BetsController.store'))
-      .form({ numbers: [1, 2, 3, 4, 5], game: 'a' })
+      .form({ numbers: [1, 2, 3, 4, 'a'], game: 1 })
       .bearerToken(token)
 
     response.assertStatus(422)
@@ -117,15 +117,89 @@ test.group('Bet random bets', (group) => {
       errors: [
         {
           rule: 'number',
-          field: 'game',
+          field: 'numbers.4',
           message: 'number validation failed',
-        },
-        {
-          rule: 'exists',
-          field: 'game',
-          message: 'exists validation failed',
         },
       ],
     })
+  })
+
+  test('numbers array isnt equal to game minAndMaxNumber', async ({ client, route }) => {
+    const login = await client.post(route('AuthController.login')).form({
+      email: 'admin@example.com',
+      password: 'test123',
+    })
+
+    const token = login.body().token.token
+
+    const response = await client
+      .post(route('BetsController.store'))
+      .form({ numbers: [1, 2, 3, 4], game: 1 })
+      .bearerToken(token)
+
+    response.assertStatus(422)
+
+    response.assertBodyContains({
+      errors: [
+        {
+          rule: 'minLength' || 'maxLength',
+          field: 'numbers',
+          message: 'minLength validation failed' || 'maxLength validation failed',
+        },
+      ],
+    })
+  })
+
+  test('random bet below min cart value', async ({ client, route }) => {
+    const login = await client.post(route('AuthController.login')).form({
+      email: 'admin@example.com',
+      password: 'test123',
+    })
+
+    const token = login.body().token.token
+
+    const response = await client
+      .post(route('BetsController.store'))
+      .form({ numbers: [1, 2, 3, 4, 5], game: 1, validCart: 30 })
+      .bearerToken(token)
+
+    response.assertStatus(422)
+
+    response.assertBodyContains({
+      message: 'Total price is below to min cart value',
+    })
+  })
+
+  test('make sure random bet content is provided', async ({ client, route }) => {
+    const login = await client.post(route('AuthController.login')).form({
+      email: 'admin@example.com',
+      password: 'test123',
+    })
+
+    const token = login.body().token.token
+
+    const response = await client
+      .post(route('BetsController.store'))
+      .form({
+        numbers: [
+          Math.floor(Math.random() * 25 + 1),
+          Math.floor(Math.random() * 25 + 1),
+          Math.floor(Math.random() * 25 + 1),
+          Math.floor(Math.random() * 25 + 1),
+          Math.floor(Math.random() * 25 + 1),
+        ],
+        game: 1,
+      })
+      .bearerToken(token)
+
+    response.assertStatus(200)
+
+    response.assertBodyContains([
+      {
+        user_id: Number,
+        game_id: Number,
+        numbers: String,
+      },
+    ])
   })
 })

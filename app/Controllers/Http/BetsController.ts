@@ -33,6 +33,9 @@ export default class BetsController {
     let bet
     const trx = await Database.transaction()
 
+    if (data.validCart === 30)
+      return response.status(422).json({ message: 'Total price is below to min cart value' })
+
     try {
       bet = await Bet.create(
         {

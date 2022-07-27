@@ -19,7 +19,7 @@ test.group('Game index', (group) => {
     })
   })
 
-  test('get a paginate list of games', async ({ client, route }) => {
+  test('get a list of games', async ({ client, route }) => {
     const login = await client.post(route('AuthController.login')).form({
       email: 'admin@example.com',
       password: 'test123',
